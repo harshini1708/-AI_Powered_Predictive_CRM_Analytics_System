@@ -1,0 +1,627 @@
+openapi: 3.0.0
+info:
+  title: I-LEAD AMS API
+  description: Apprenticeship Management System REST API
+  version: 1.0.0
+  contact:
+    name: I-LEAD Development Team
+    email: api-support@i-leadusa.org
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.example.com/api
+    description: Production
+  - url: http://localhost:3000/api
+    description: Development
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [apprentice, supervisor, journeyworker, administrator, super_admin]
+        status:
+          type: string
+          enum: [active, pending_approval, inactive]
+        organizationId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, firstName, lastName, role, status]
+
+    Apprentice:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        program:
+          type: string
+        supervisor:
+          type: string
+        supervisorEmail:
+          type: string
+          format: email
+        journeyworker:
+          type: string
+        journeyworkerEmail:
+          type: string
+          format: email
+        employer:
+          type: string
+        startDate:
+          type: string
+          format: date
+        ojtHours:
+          type: number
+        qualifiedOjtHours:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive, completed, archived]
+      required: [id, userId, name, email, program, status]
+
+    HourLog:
+      type: object
+      properties:
+        id:
+          type: string
+        apprenticeId:
+          type: string
+        date:
+          type: string
+          format: date
+        ojtHours:
+          type: number
+        rtiHours:
+          type: number
+        domain:
+          type: string
+          enum: [dataCollection, assessment, skillAcquisition, behaviorReduction, documentation, crisisManagement]
+        module:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        rubricScore:
+          type: integer
+          minimum: 1
+          maximum: 5
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, apprenticeId, date, status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required: [error, message, timestamp]
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phone:
+                  type: string
+                role:
+                  type: string
+                  enum: [apprentice, supervisor, journeyworker, administrator]
+              required: [email, password, firstName, lastName, role]
+      responses:
+        201:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+                  accessToken:
+                    type: string
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        409:
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  expiresIn:
+                    type: string
+        401:
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current user
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Current user information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: List users
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+  /apprentices:
+    get:
+      tags: [Apprentices]
+      summary: List apprentices
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        200:
+          description: List of apprentices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Apprentice'
+
+  /apprentices/{id}:
+    get:
+      tags: [Apprentices]
+      summary: Get apprentice details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Apprentice details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apprentice:
+                    $ref: '#/components/schemas/Apprentice'
+        404:
+          description: Apprentice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /apprentices/{id}/progress:
+    get:
+      tags: [Apprentices]
+      summary: Get apprentice progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Apprentice progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  progress:
+                    type: object
+                    properties:
+                      apprenticeId:
+                        type: string
+                      completionPercent:
+                        type: number
+                      supervisionRatio:
+                        type: number
+                      supervisionOk:
+                        type: boolean
+                      ojtHours:
+                        type: number
+                      qualifiedOjt:
+                        type: number
+
+  /hour-logs/submit:
+    post:
+      tags: [Hour Logs]
+      summary: Submit hours
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ojtDomain:
+                  type: string
+                  enum: [dataCollection, assessment, skillAcquisition, behaviorReduction, documentation, crisisManagement]
+                rtiModule:
+                  type: string
+                ojtHours:
+                  type: number
+                rtiHours:
+                  type: number
+                logDate:
+                  type: string
+                  format: date
+                description:
+                  type: string
+      responses:
+        201:
+          description: Hours submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  hourLog:
+                    $ref: '#/components/schemas/HourLog'
+
+  /hour-logs:
+    get:
+      tags: [Hour Logs]
+      summary: List hour logs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of hour logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/HourLog'
+                  count:
+                    type: integer
+
+  /hour-logs/{id}/approve:
+    post:
+      tags: [Hour Logs]
+      summary: Approve hours
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rubricScore:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                rubricDomain:
+                  type: string
+                  enum: [A, B, C, D, E, F]
+                specificTask:
+                  type: string
+                supervisionMinutes:
+                  type: integer
+                supervisionType:
+                  type: string
+                  enum: [direct, indirect]
+              required: [rubricScore, rubricDomain, specificTask]
+      responses:
+        200:
+          description: Hours approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  hourLog:
+                    $ref: '#/components/schemas/HourLog'
+
+  /programs:
+    get:
+      tags: [Programs]
+      summary: List programs
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: List of programs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        code:
+                          type: string
+                        targetOjtHours:
+                          type: number
+                        targetRtiHours:
+                          type: number
+
+  /analytics/dashboard:
+    get:
+      tags: [Analytics]
+      summary: Get dashboard stats
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dashboard:
+                    type: object
+                    properties:
+                      totalUsers:
+                        type: integer
+                      activeApprentices:
+                        type: integer
+                      totalOjtHours:
+                        type: number
+                      qualifiedOjt:
+                        type: number
+                      pendingApprovals:
+                        type: integer
+
+  /analytics/domain-progress:
+    get:
+      tags: [Analytics]
+      summary: Get domain progress
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Domain breakdown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domainBreakdown:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        domain:
+                          type: string
+                        qualifiedHours:
+                          type: number
+
+  /analytics/competency-heat-map:
+    get:
+      tags: [Analytics]
+      summary: Get competency ratings
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Competency heat map
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  competencyMap:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        domain:
+                          type: string
+                        avgScore:
+                          type: string
+                        count:
+                          type: integer
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Users
+    description: User management endpoints
+  - name: Apprentices
+    description: Apprentice management endpoints
+  - name: Hour Logs
+    description: Hour log submission and approval
+  - name: Programs
+    description: Apprenticeship programs
+  - name: Analytics
+    description: Analytics and reporting

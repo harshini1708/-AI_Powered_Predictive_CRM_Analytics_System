@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I-LEAD Apprenticeship Management System</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body,#root{width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{background:#f5f5f5}
+    .top-nav{background:#fff;border-bottom:2px solid #e0e0e0;padding:10px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,0.08);position:sticky;top:0;z-index:100}
+    .logo-container{display:flex;align-items:center;gap:12px}
+    .logo-text{font-weight:700;color:#003d82;font-size:14px}
+    .tier-badge{display:inline-block;padding:4px 10px;background:#e84c1f;color:#fff;border-radius:4px;font-size:10px;font-weight:600}
+    .tier-badge-super{background:#6f42c1}
+    .nav-right{display:flex;align-items:center;gap:16px}
+    .lang-toggle{display:flex;gap:4px}
+    .lang-btn{padding:5px 10px;border:1px solid #ddd;background:#f8f9fa;color:#495057;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600}
+    .lang-btn.active{background:#e84c1f;color:#fff;border-color:#e84c1f}
+    .btn-logout{padding:6px 12px;background:#e84c1f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600}
+    .auth-container{min-height:100vh;background:linear-gradient(135deg,#003d82 0%,#1a5a96 100%);display:flex;justify-content:center;align-items:center;padding:20px}
+    .auth-card{background:#fff;padding:40px;border-radius:8px;max-width:500px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+    .auth-title{text-align:center;font-size:24px;font-weight:700;color:#003d82;margin-bottom:4px}
+    .auth-subtitle{font-size:13px;color:#6c757d;text-align:center;margin-bottom:24px}
+    .auth-tabs{display:flex;gap:12px;margin-bottom:24px;border-bottom:2px solid #e0e0e0}
+    .auth-tab{padding:12px 16px;cursor:pointer;border:none;background:none;font-size:13px;font-weight:600;color:#6c757d;border-bottom:3px solid transparent;transition:all 0.2s}
+    .auth-tab.active{color:#003d82;border-bottom-color:#e84c1f}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:13px;font-weight:600;color:#212529;margin-bottom:6px}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:4px;font-size:13px;font-family:inherit}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#e84c1f;box-shadow:0 0 0 3px rgba(232,76,31,0.1)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn{padding:12px;background:#e84c1f;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:background 0.2s;width:100%}
+    .btn:hover{background:#d63812}
+    .btn.disabled{background:#ccc;cursor:not-allowed}
+    .btn-secondary{background:#6c757d}.btn-secondary:hover{background:#5a6268}
+    .btn-success{background:#28a745}.btn-success:hover{background:#218838}
+    .btn-danger{background:#dc3545}.btn-danger:hover{background:#c82333}
+    .btn-purple{background:#6f42c1}.btn-purple:hover{background:#5a32a3}
+    .btn-sm{padding:8px 12px;font-size:12px;width:auto}
+    .btn-xs{padding:5px 8px;font-size:11px;width:auto}
+    .login-link{text-align:center;margin-top:16px;font-size:13px;color:#6c757d}
+    .login-link a{color:#e84c1f;cursor:pointer;text-decoration:none;font-weight:600}
+    .main-container{display:flex;min-height:calc(100vh - 60px)}
+    .sidebar{width:240px;background:#003d82;color:#fff;overflow-y:auto;padding:20px 0;flex-shrink:0}
+    .sidebar-super{background:#1a0533}
+    .sidebar-section-title{padding:8px 20px;font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,0.6);letter-spacing:0.5px}
+    .sidebar-section{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+    .sidebar-item{padding:12px 20px;cursor:pointer;transition:all 0.2s;font-size:13px;border-left:4px solid transparent}
+    .sidebar-item:hover{background:rgba(255,255,255,0.1)}
+    .sidebar-item.active{background:#1a5a96;border-left-color:#e84c1f;font-weight:600}
+    .sidebar-super .sidebar-item.active{background:#5a32a3;border-left-color:#e84c1f}
+    .content{flex:1;overflow-y:auto;padding:30px}
+    .page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+    .page-header-left{flex:1;min-width:200px}
+    .page-title{font-size:24px;font-weight:700;color:#212529;margin-bottom:8px}
+    .page-subtitle{font-size:13px;color:#6c757d}
+    .card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+    .card-title{font-size:16px;font-weight:700;color:#212529;margin-bottom:16px;border-bottom:2px solid #f5f5f5;padding-bottom:12px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+    .stat-card{background:#fff;padding:20px;border-radius:8px;border:1px solid #e0e0e0;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+    .stat-label{font-size:11px;color:#6c757d;font-weight:600;text-transform:uppercase;margin-bottom:8px}
+    .stat-value{font-size:28px;font-weight:700;color:#e84c1f}
+    .stat-sub{font-size:12px;color:#6c757d;margin-top:4px}
+    .progress-bar{width:100%;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;margin:4px 0}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#e84c1f 0%,#ff8a50 100%);transition:width 0.3s}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:12px;text-align:left;border-bottom:1px solid #e0e0e0}
+    th{background:#f8f9fa;font-weight:600;color:#212529}
+    tr:hover{background:#fafafa}
+    .badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600}
+    .badge-success{background:#d4edda;color:#155724}
+    .badge-warning{background:#fff3cd;color:#856404}
+    .badge-danger{background:#f8d7da;color:#721c24}
+    .badge-info{background:#d1ecf1;color:#0c5460}
+    .badge-primary{background:#cfe2ff;color:#084298}
+    .badge-purple{background:#ede9f6;color:#5a32a3}
+    .alert{padding:12px 16px;border-radius:4px;margin-bottom:16px;font-size:13px;border-left:4px solid}
+    .alert-info{background:#d1ecf1;color:#0c5460;border-left-color:#0c5460}
+    .alert-success{background:#d4edda;color:#155724;border-left-color:#155724}
+    .alert-warning{background:#fff3cd;color:#856404;border-left-color:#856404}
+    .rubric-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+    .rubric-option{padding:14px 8px;border:3px solid #e0e0e0;border-radius:8px;background:#fff;cursor:pointer;text-align:center;transition:all 0.2s}
+    .rubric-option:hover{border-color:#ccc;background:#fafafa}
+    .rubric-option.selected{border-color:#e84c1f;background:#fff3f0}
+    .rubric-num{font-size:28px;font-weight:800;margin-bottom:4px}
+    .rubric-label{font-size:11px;font-weight:700}
+    .rubric-desc{font-size:10px;color:#6c757d;margin-top:4px}
+    .rubric-detail{font-size:12px;padding:12px;background:#f8f9fa;border-radius:4px;border-left:4px solid #e84c1f;margin:8px 0}
+    .domain-progress{display:grid;gap:10px;margin:16px 0}
+    .domain-row{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+    .pending-card{border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:12px;background:#fff}
+    .pending-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .pending-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;padding:20px}
+    .modal{background:#fff;padding:30px;border-radius:8px;max-width:750px;width:100%;max-height:90vh;overflow-y:auto}
+    .modal-title{font-size:20px;font-weight:700;color:#212529;margin-bottom:20px}
+    .action-buttons{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+    .toast{position:fixed;bottom:20px;right:20px;padding:16px 24px;border-radius:8px;color:#fff;font-weight:600;z-index:2000;animation:slideIn 0.3s ease;max-width:360px}
+    .toast-success{background:#28a745}.toast-error{background:#dc3545}
+    .heat-row{display:grid;grid-template-columns:160px 60px 80px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0}
+    .heat-cell{height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+    .req-field{background:#fff8f0;border-left:4px solid #ff9800;padding:12px;margin-bottom:16px;border-radius:4px}
+    .req-title{font-size:12px;font-weight:700;color:#ff6f00;margin-bottom:8px}
+    .confirm-box{background:#fff;border-radius:8px;padding:24px;max-width:400px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+    .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:12px}
+    .doc-card{border:1px solid #e0e0e0;border-radius:8px;padding:16px;background:#fff;transition:box-shadow 0.2s}
+    .doc-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+    .doc-name{font-size:13px;font-weight:600;color:#212529;margin-bottom:4px}
+    .doc-meta{font-size:11px;color:#6c757d}
+    .upload-zone{border:2px dashed #e0e0e0;border-radius:8px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;background:#fafafa}
+    .upload-zone:hover{border-color:#e84c1f;background:#fff3f0}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @media(max-width:768px){.sidebar{display:none}.form-row{grid-template-columns:1fr}.rubric-grid{grid-template-columns:repeat(3,1fr)}.stats-grid{grid-template-columns:1fr 1fr}.heat-row{grid-template-columns:120px 50px 70px}}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+var useState = React.useState;
+var useEffect = React.useEffect;
+var SUPER_EMAIL = "hector.torres@i-leadusa.org";
+var SUPER_PIN = "071676";
+var CONFIG = {
+  WH: "https://hook.us2.make.com/o23utkbnivlz57azfnzvppg11vatqsco",
+  WEBHOOKS_ON: true, ORG: "I-LEAD Inc.", ORG_ID: "ILEAD-001"
+};
+var DEFAULT_PROGRAMS = {
+  "RBT-REG": { name: "RBT Registered", code: "RBT-REG", ojt: 2000, rti: 184, partner: "I-LEAD Inc." },
+  "ELEC-REG": { name: "Electrical Registered", code: "ELEC-REG", ojt: 8000, rti: 1000, partner: "IBEW 743" },
+  "SM-REG": { name: "Sheet Metal Registered", code: "SM-REG", ojt: 8000, rti: 1000, partner: "SM Local 19" }
+};
+var DEFAULT_ORG = { id: "ILEAD-001", name: "I-LEAD Inc.", address: "Reading, PA", contact: "hector.torres@i-leadusa.org", phone: "", status: "Active" };
+var RBT_TASKS = {
+  A: { name: "Professional Conduct & Scope of Practice", color: "#dc3545", tasks: ["A-1: Follow professional and ethical guidelines","A-2: Maintain professional boundaries","A-3: Maintain client dignity and confidentiality","A-4: Follow HIPAA compliance procedures","A-5: Recognize scope of practice limitations","A-6: Report to supervisor appropriately"] },
+  B: { name: "Assessment", color: "#ff9800", tasks: ["B-1: Conduct direct observation of client behavior","B-2: Implement measurement procedures","B-3: Assist with preference assessments","B-4: Assist with functional behavior assessments","B-5: Graph and display data accurately"] },
+  C: { name: "Skill Acquisition", color: "#ffc107", tasks: ["C-1: Implement skill acquisition plans with fidelity","C-2: Use reinforcement procedures","C-3: Implement discrete trial teaching","C-4: Implement naturalistic teaching procedures","C-5: Use prompting and prompt fading","C-6: Implement stimulus control transfer","C-7: Use task analysis and chaining","C-8: Implement differential reinforcement","C-9: Implement shaping procedures","C-10: Use stimulus fading procedures","C-11: Promote generalization and maintenance","C-12: Implement token economy systems"] },
+  D: { name: "Behavior Reduction", color: "#28a745", tasks: ["D-1: Implement behavior intervention plans","D-2: Identify common functions of behavior","D-3: Implement antecedent interventions","D-4: Use differential reinforcement for behavior reduction","D-5: Implement extinction procedures","D-6: Respond appropriately to crisis situations"] },
+  E: { name: "Documentation & Reporting", color: "#007bff", tasks: ["E-1: Maintain accurate session notes","E-2: Document in EHR systems","E-3: Report variables affecting client progress","E-4: Generate objective behavioral descriptions","E-5: Communicate effectively with team members","E-6: Follow organizational documentation protocols"] },
+  F: { name: "Professional Development", color: "#6f42c1", tasks: ["F-1: Participate in supervision meetings","F-2: Receive and implement feedback","F-3: Engage in continuing education","F-4: Maintain professional relationships","F-5: Practice self-care and stress management","F-6: Seek guidance when needed","F-7: Follow organizational policies","F-8: Contribute to team collaboration"] }
+};
+var OJT_DOMAINS = [
+  { key: "dataCollection", en: "Data Collection", es: "Recoleccion de Datos", target: 250 },
+  { key: "assessment", en: "Assessment Support", es: "Apoyo de Evaluacion", target: 200 },
+  { key: "skillAcquisition", en: "Skill Acquisition", es: "Adquisicion de Habilidades", target: 600 },
+  { key: "behaviorReduction", en: "Behavior Reduction", es: "Reduccion de Comportamiento", target: 400 },
+  { key: "documentation", en: "Documentation & Compliance", es: "Documentacion y Cumplimiento", target: 300 },
+  { key: "crisisManagement", en: "Crisis Management", es: "Gestion de Crisis", target: 250 }
+];
+var RTI_MODULES = [
+  { key: "ethics", en: "Ethics and Professional Conduct (16h)", es: "Etica y Conducta Profesional (16h)", hours: 16 },
+  { key: "measurement", en: "Measurement and Data Collection (16h)", es: "Medicion y Recoleccion de Datos (16h)", hours: 16 },
+  { key: "assessProc", en: "Assessment Procedures (16h)", es: "Procedimientos de Evaluacion (16h)", hours: 16 },
+  { key: "skillStrat", en: "Skill Acquisition Strategies (24h)", es: "Estrategias de Adquisicion (24h)", hours: 24 },
+  { key: "behavTech", en: "Behavior Reduction Techniques (20h)", es: "Tecnicas de Reduccion (20h)", hours: 20 },
+  { key: "docStandards", en: "Documentation Standards (12h)", es: "Estandares de Documentacion (12h)", hours: 12 },
+  { key: "crisis", en: "Crisis Intervention (16h)", es: "Intervencion en Crisis (16h)", hours: 16 },
+  { key: "commSkills", en: "Communication Skills (12h)", es: "Habilidades de Comunicacion (12h)", hours: 12 },
+  { key: "legal", en: "Legal and Regulatory Compliance (12h)", es: "Cumplimiento Legal (12h)", hours: 12 },
+  { key: "cultural", en: "Cultural Competence (12h)", es: "Competencia Cultural (12h)", hours: 12 },
+  { key: "tech", en: "Technology in ABA (12h)", es: "Tecnologia en ABA (12h)", hours: 12 },
+  { key: "profDev", en: "Professional Development (8h)", es: "Desarrollo Profesional (8h)", hours: 8 },
+  { key: "capstone", en: "Capstone Project (8h)", es: "Proyecto Final (8h)", hours: 8 }
+];
+var RUBRIC = [
+  { score: 1, en: "Not Yet", es: "Aun No", color: "#dc3545", desc_en: "Cannot perform independently. Accuracy <50%.", criteria: "Full demonstration needed" },
+  { score: 2, en: "Emerging", es: "Emergente", color: "#ff9800", desc_en: "3+ prompts per trial. Accuracy 50-69%.", criteria: "Frequent prompts; inconsistent" },
+  { score: 3, en: "Developing", es: "En Desarrollo", color: "#ffc107", desc_en: "1-2 prompts per session. Accuracy 70-89%.", criteria: "Occasional prompting; mostly accurate" },
+  { score: 4, en: "Proficient", es: "Competente", color: "#28a745", desc_en: "Independent. Accuracy 90%+ across 3+ observations.", criteria: "Consistent accuracy; adapts procedures" },
+  { score: 5, en: "Mastery", es: "Dominio", color: "#007bff", desc_en: "Fluent across contexts. Accuracy 95%+. Trains peers.", criteria: "Expert-level; mentors others" }
+];
+function load(k, d) { try { var s = localStorage.getItem(k); return s ? JSON.parse(s) : d; } catch(e) { return d; } }
+function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+function gid(p) { return p + "-" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
+function wh(data) { if (!CONFIG.WEBHOOKS_ON) return; try { fetch(CONFIG.WH, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({}, data, { timestamp: new Date().toISOString(), orgId: CONFIG.ORG_ID })) }); } catch(e) {} }
+var DEF_USERS = { "admin@i-leadusa.org": { id: "ADM-001", role: "administrator", name: "Admin", email: "admin@i-leadusa.org" } };
+DEF_USERS[SUPER_EMAIL] = { id: "SUPER-001", role: "super_admin", name: "Hector Torres", email: SUPER_EMAIL };
+function App() {
+  var lang_s = useState("en"); var lang = lang_s[0]; var setLang = lang_s[1];
+  var user_s = useState(null); var user = user_s[0]; var setUser = user_s[1];
+  var authMode_s = useState("login"); var authMode = authMode_s[0]; var setAuthMode = authMode_s[1];
+  var tab_s = useState("dashboard"); var tab = tab_s[0]; var setTab = tab_s[1];
+  var modal_s = useState(null); var modal = modal_s[0]; var setModal = modal_s[1];
+  var toast_s = useState(null); var toast = toast_s[0]; var setToast = toast_s[1];
+  var loading_s = useState(false); var loading = loading_s[0]; var setLoading = loading_s[1];
+  var fd_s = useState({}); var fd = fd_s[0]; var setFd = fd_s[1];
+  var confirm_s = useState(null); var cfm = confirm_s[0]; var setCfm = confirm_s[1];
+  var users_s = useState(load("ilead_users", DEF_USERS)); var users = users_s[0]; var setUsers = users_s[1];
+  var apps_s = useState(load("ilead_apprentices", [])); var apps = apps_s[0]; var setApps = apps_s[1];
+  var logs_s = useState(load("ilead_hourlogs", [])); var logs = logs_s[0]; var setLogs = logs_s[1];
+  var rats_s = useState(load("ilead_ratings", [])); var rats = rats_s[0]; var setRats = rats_s[1];
+  var docs_s = useState(load("ilead_docs", [])); var docsList = docs_s[0]; var setDocs = docs_s[1];
+  var progs_s = useState(load("ilead_programs", DEFAULT_PROGRAMS)); var progs = progs_s[0]; var setProgs = progs_s[1];
+  var orgs_s = useState(load("ilead_orgs", [DEFAULT_ORG])); var orgs = orgs_s[0]; var setOrgs = orgs_s[1];
+  useEffect(function() { save("ilead_users", users); }, [users]);
+  useEffect(function() { save("ilead_apprentices", apps); }, [apps]);
+  useEffect(function() { save("ilead_hourlogs", logs); }, [logs]);
+  useEffect(function() { save("ilead_ratings", rats); }, [rats]);
+  useEffect(function() { save("ilead_docs", docsList); }, [docsList]);
+  useEffect(function() { save("ilead_programs", progs); }, [progs]);
+  useEffect(function() { save("ilead_orgs", orgs); }, [orgs]);
+  var showT = function(m, t) { setToast({ message: m, type: t || "success" }); setTimeout(function() { setToast(null); }, 3500); };
+  var up = function(ch) { setFd(function(p) { return Object.assign({}, p, ch); }); };
+  var isSuper = function(u) { return u && (u.role === "super_admin" || u.email === SUPER_EMAIL) && pinVerified; };
+  var isAdmin = function(u) { return u && (u.role === "administrator" || u.role === "super_admin" || u.email === SUPER_EMAIL); };
+  var LT = function() { return (<div className="lang-toggle"><button className={lang === "en" ? "lang-btn active" : "lang-btn"} onClick={function() { setLang("en"); }}>EN</button><button className={lang === "es" ? "lang-btn active" : "lang-btn"} onClick={function() { setLang("es"); }}>ES</button></div>); };
+  /* AUTH */
+  var handleLogin = function(e) {
+    e.preventDefault(); var el = document.getElementById("loginEmail");
+    var em = el ? el.value.trim().toLowerCase() : "";
+    if (users[em]) { var u = Object.assign({}, users[em]); if (em === SUPER_EMAIL && u.role !== "super_admin") { u.role = "super_admin"; var u2 = Object.assign({}, users); u2[em] = u; setUsers(u2); } if (u.role === "super_admin" || em === SUPER_EMAIL) { setUser(u); setTab("pin_check"); setPinVerified(false); setPinInput(""); setPinErr(""); return; } if (u.status === "pending_approval") { showT(t(lang, "Account pending approval by administrator", "Cuenta pendiente de aprobacion"), "error"); return; } if (u.email !== SUPER_EMAIL && u.role === "super_admin") { u.role = "apprentice"; } setUser(u); setTab("dashboard"); showT("Welcome, " + u.name + "!"); }
+    else { showT("Account not found", "error"); }
+  };
+  var handleRegister = function(e) {
+    e.preventDefault(); setLoading(true);
+    var em = (fd.email || "").toLowerCase();
+    if (users[em]) { showT("Email already registered", "error"); setLoading(false); return; }
+    var prog = (fd.programCode && progs[fd.programCode]) ? progs[fd.programCode].name : "";
+    var role = fd.role || "apprentice"; if (role === "super_admin") { role = "apprentice"; }
+    var nu = { id: gid("USR"), role: role, name: ((fd.firstName || "") + " " + (fd.lastName || "")).trim(), email: em, phone: fd.phone || "", program: prog, programCode: fd.programCode || "", status: "pending_approval" };
+    wh({ action: "registration", id: nu.id, role: nu.role, name: nu.name, email: nu.email, phone: nu.phone, program: nu.program, programCode: nu.programCode });
+    var u2 = Object.assign({}, users); u2[em] = nu; setUsers(u2);
+    setLoading(false); showT("Account created!"); setAuthMode("login"); setFd({});
+  };
+  /* ADD APPRENTICE */
+  var handleAddApp = function(e) {
+    e.preventDefault(); setLoading(true);
+    var prog = (fd.programCode && progs[fd.programCode]) ? progs[fd.programCode].name : "";
+    var na = { id: gid("APP"), name: ((fd.firstName || "") + " " + (fd.lastName || "")).trim(), email: (fd.email || "").toLowerCase(), phone: fd.phone || "", program: prog, programCode: fd.programCode || "", status: "Active", ojt: 0, rti: 0, qualifiedOjt: 0, supervisor: fd.supervisor || "", supervisorEmail: (fd.supervisorEmail || "").toLowerCase(), journeyworker: fd.journeyworker || "", journeyworkerEmail: (fd.journeyworkerEmail || "").toLowerCase(), employer: fd.employer || "", startDate: fd.startDate || new Date().toISOString().split("T")[0], wageStart: fd.wageStart || "", wageCurrent: fd.wageCurrent || "", domainHours: {} };
+    wh({ action: "new_apprentice", id: na.id, name: na.name, email: na.email, phone: na.phone, program: na.program, programCode: na.programCode, status: "Active", ojt: 0, rti: 0, qualifiedOjt: 0, supervisor: na.supervisor, supervisorEmail: na.supervisorEmail, employer: na.employer, startDate: na.startDate, createdBy: user.email });
+    setApps(function(p) { return p.concat([na]); }); setLoading(false); setModal(null); setFd({}); showT("Apprentice added!");
+  };
+  /* SUPER: ADD USER */
+  var handleAddUser = function(e) {
+    e.preventDefault(); var em = (fd.nuEmail || "").toLowerCase();
+    if (!em || !fd.nuName || !fd.nuRole) { showT("All fields required", "error"); return; }
+    if (users[em]) { showT("Email already exists", "error"); return; }
+    var nu = { id: gid("USR"), role: fd.nuRole, name: fd.nuName.trim(), email: em, phone: fd.nuPhone || "", programCode: fd.nuProgram || "", status: "approved" };
+    wh({ action: "registration", id: nu.id, role: nu.role, name: nu.name, email: nu.email, phone: nu.phone, program: "", programCode: nu.programCode });
+    var u2 = Object.assign({}, users); u2[em] = nu; setUsers(u2); showT("User created!"); setModal(null); setFd({});
+  };
+  /* SUPER: EDIT USER */
+  var handleEditUser = function(e) {
+    e.preventDefault(); var em = fd.editEmail;
+    if (!em || !users[em]) { showT("User not found", "error"); return; }
+    var upd = Object.assign({}, users[em], { name: fd.editName || users[em].name, role: fd.editRole || users[em].role, phone: fd.editPhone !== undefined ? fd.editPhone : users[em].phone });
+    var u2 = Object.assign({}, users); u2[em] = upd; setUsers(u2); showT("User updated!"); setModal(null); setFd({});
+  };
+  /* SUPER: DELETE USER */
+  var delUser = function(em) { setCfm({ msg: "Delete user " + (users[em] ? users[em].name : em) + "?", fn: function() { if (em === SUPER_EMAIL) { showT("Cannot delete Super Admin", "error"); setCfm(null); return; } var u2 = Object.assign({}, users); delete u2[em]; setUsers(u2); showT("User deleted."); setCfm(null); } }); };
+  /* SUPER: DELETE APPRENTICE */
+  var delApp = function(id) { var a = apps.find(function(x) { return x.id === id; }); setCfm({ msg: "Delete " + (a ? a.name : id) + " and all their logs?", fn: function() { setApps(function(p) { return p.filter(function(x) { return x.id !== id; }); }); setLogs(function(p) { return p.filter(function(x) { return x.apprenticeId !== id; }); }); setRats(function(p) { return p.filter(function(x) { return x.apprenticeId !== id; }); }); showT("Apprentice deleted."); setCfm(null); } }); };
+  /* APPROVE USER */
+  var approveUser = function(em) { var u2 = Object.assign({}, users); if (u2[em]) { u2[em] = Object.assign({}, u2[em], { status: "approved" }); setUsers(u2); showT("User approved!"); } };
+  /* PROGRAM MGMT */
+  var handleAddProg = function(e) { e.preventDefault(); var code = (fd.progCode || "").toUpperCase().replace(/\s/g, "-"); if (!code || !fd.progName) { showT("Code and name required", "error"); return; } if (progs[code]) { showT("Code exists", "error"); return; } var np = { name: fd.progName, code: code, ojt: parseInt(fd.progOjt || "2000"), rti: parseInt(fd.progRti || "184"), partner: fd.progPartner || "", type: fd.progType || "Registered Apprenticeship", status: "Active" }; var p2 = Object.assign({}, progs); p2[code] = np; setProgs(p2); showT("Program added!"); setModal(null); setFd({}); };
+  var delProg = function(code) { setCfm({ msg: "Delete program " + code + "?", fn: function() { var p2 = Object.assign({}, progs); delete p2[code]; setProgs(p2); showT("Deleted."); setCfm(null); } }); };
+  /* ORG MGMT */
+  var handleAddOrg = function(e) { e.preventDefault(); if (!fd.orgName) { showT("Name required", "error"); return; } setOrgs(function(p) { return p.concat([{ id: gid("ORG"), name: fd.orgName, address: fd.orgAddress || "", contact: fd.orgContact || "", phone: fd.orgPhone || "", status: "Active" }]); }); showT("Organization added!"); setModal(null); setFd({}); };
+  var delOrg = function(id) { setCfm({ msg: "Delete this organization?", fn: function() { setOrgs(function(p) { return p.filter(function(o) { return o.id !== id; }); }); showT("Removed."); setCfm(null); } }); };
+  /* DOC UPLOAD */
+  var handleDocUp = function(e) { var files = e.target.files; if (!files) return; var nd = Array.from(files).map(function(f) { return { id: gid("DOC"), name: f.name, size: f.size, type: f.type, uploadedBy: user.name, uploadedAt: new Date().toISOString(), url: URL.createObjectURL(f) }; }); setDocs(function(p) { return p.concat(nd); }); showT(nd.length + " doc(s) uploaded!"); };
+  var delDoc = function(id) { setCfm({ msg: "Remove this document?", fn: function() { setDocs(function(p) { return p.filter(function(d) { return d.id !== id; }); }); showT("Removed."); setCfm(null); } }); };
+  /* HOUR SUBMIT */
+  var handleSubmitHours = function(e) {
+    e.preventDefault();
+    var me = apps.find(function(a) { return a.email === user.email; });
+    if (!me) { showT("Profile not found. Ask admin to add you.", "error"); return; }
+    var ojt = parseFloat(fd.ojtHours || "0"); var rti = parseFloat(fd.rtiHours || "0");
+    if (ojt === 0 && rti === 0) { showT("Enter hours", "error"); return; }
+    if (ojt > 0 && !fd.ojtDomain) { showT("Select OJT task area", "error"); return; }
+    var domObj = OJT_DOMAINS.find(function(d) { return d.key === fd.ojtDomain; });
+    var rtiObj = RTI_MODULES.find(function(m) { return m.key === fd.rtiCategory; });
+    var log = { id: gid("LOG"), apprenticeId: me.id, apprenticeName: me.name, apprenticeEmail: me.email, ojtHours: ojt, rtiHours: rti, qualifiedHours: 0, date: fd.logDate || new Date().toISOString().split("T")[0], status: "pending", submittedBy: user.email, submittedByRole: "apprentice", submittedAt: new Date().toISOString(), ojtDomain: fd.ojtDomain || null, ojtDomainName: domObj ? domObj.en : "", rtiCategory: fd.rtiCategory || null, rtiCategoryName: rtiObj ? rtiObj.en : "", description: fd.description || "", programCode: me.programCode, supervisor: me.supervisor, supervisorEmail: me.supervisorEmail, hourType: ojt > 0 ? "OJT" : "RTI" };
+    wh({ action: "log_hours", id: log.id, apprenticeId: log.apprenticeId, apprenticeName: log.apprenticeName, apprenticeEmail: log.apprenticeEmail, ojtHours: ojt, rtiHours: rti, qualifiedHours: 0, date: log.date, status: "pending", submittedBy: log.submittedBy, submittedByRole: "apprentice", submittedAt: log.submittedAt, rubricDomain: log.ojtDomain, rubricScore: "", rubricNotes: "", evidenceType: "", nextSteps: "", remediationRequired: false, supervisionMinutes: 0, supervisionType: "", description: log.description });
+    setLogs(function(p) { return p.concat([log]); }); setFd({}); showT("Hours submitted for approval!");
+  };
+  /* APPROVE */
+  var handleApprove = function(logId) {
+    var sc = fd["sc_" + logId] ? parseInt(fd["sc_" + logId]) : null;
+    if (!sc) { showT("Select rating", "error"); return; }
+    if (!fd["td_" + logId] || !fd["tk_" + logId]) { showT("Select task domain and task", "error"); return; }
+    if (sc < 4 && !fd["nx_" + logId]) { showT("Remediation plan required for scores below 4", "error"); return; }
+    var notes = fd["nt_" + logId] || ""; var next = fd["nx_" + logId] || "";
+    var supMin = parseFloat(fd["sm_" + logId] || "0"); var supType = fd["st_" + logId] || "direct";
+    setLogs(function(prev) { return prev.map(function(l) {
+      if (l.id !== logId) return l;
+      var q = sc >= 3 ? l.ojtHours : 0;
+      var upd = Object.assign({}, l, { status: "approved", rubricScore: sc, rubricNotes: notes, nextSteps: next, remediationRequired: sc < 3, qualifiedHours: q, approvedBy: user.email, approvedAt: new Date().toISOString(), supervisionMinutes: supMin, supervisionType: supType, taskDomain: fd["td_" + logId], specificTask: fd["tk_" + logId], accuracyData: fd["ac_" + logId] || "", contextVars: fd["cx_" + logId] || "" });
+      wh({ action: "log_hours", id: upd.id, apprenticeId: upd.apprenticeId, apprenticeName: upd.apprenticeName, apprenticeEmail: upd.apprenticeEmail, ojtHours: upd.ojtHours, rtiHours: upd.rtiHours, qualifiedHours: q, date: upd.date, status: "approved", submittedBy: upd.submittedBy, submittedByRole: upd.submittedByRole, submittedAt: upd.submittedAt, rubricDomain: upd.taskDomain, rubricScore: sc, rubricNotes: notes, evidenceType: supType, nextSteps: next, remediationRequired: upd.remediationRequired, supervisionMinutes: supMin, supervisionType: supType, description: upd.description });
+      setApps(function(ap) { return ap.map(function(a) { if (a.id !== upd.apprenticeId) return a; var dh = Object.assign({}, a.domainHours || {}); if (upd.ojtDomain) { dh[upd.ojtDomain] = (dh[upd.ojtDomain] || 0) + q; } return Object.assign({}, a, { ojt: a.ojt + upd.ojtHours, rti: a.rti + upd.rtiHours, qualifiedOjt: (a.qualifiedOjt || 0) + q, domainHours: dh }); }); });
+      setRats(function(pr) { return pr.concat([{ id: gid("RAT"), logId: logId, apprenticeId: upd.apprenticeId, apprenticeName: upd.apprenticeName, date: upd.date, taskDomain: fd["td_" + logId], specificTask: fd["tk_" + logId], score: sc, label: RUBRIC[sc - 1].en, supType: supType, supMinutes: supMin, accuracy: fd["ac_" + logId] || "", evidence: notes, nextSteps: next, context: fd["cx_" + logId] || "", assessedBy: user.email, assessedAt: new Date().toISOString() }]); });
+      return upd;
+    }); });
+    showT("Approved with rating!"); setModal(null);
+  };
+  var handleReject = function(logId) { var r = fd["nt_" + logId] || "See supervisor"; setLogs(function(p) { return p.map(function(l) { if (l.id === logId) return Object.assign({}, l, { status: "rejected", rubricNotes: r, approvedBy: user.email, approvedAt: new Date().toISOString() }); return l; }); }); showT("Rejected"); setModal(null); };
+  /* COMPUTED */
+  var myApp = (user && user.role === "apprentice") ? apps.find(function(a) { return a.email === user.email; }) : null;
+  var supApps = (user && (user.role === "supervisor" || user.role === "journeyworker")) ? apps.filter(function(a) { return a.supervisorEmail === user.email || a.journeyworkerEmail === user.email; }) : [];
+  var myLogs = myApp ? logs.filter(function(l) { return l.apprenticeId === myApp.id; }) : [];
+  var pendLogs = (user && (user.role === "supervisor" || user.role === "journeyworker")) ? logs.filter(function(l) { return l.status === "pending" && supApps.some(function(a) { return a.id === l.apprenticeId; }); }) : [];
+  var myRats = myApp ? rats.filter(function(r) { return r.apprenticeId === myApp.id; }) : [];
+  var supRatio = function(aid) { var ah = logs.filter(function(l) { return l.apprenticeId === aid && l.status === "approved" && l.ojtHours > 0; }); var tot = ah.reduce(function(s, l) { return s + l.ojtHours; }, 0); var dm = rats.filter(function(r) { return r.apprenticeId === aid && r.supType === "direct"; }).reduce(function(s, r) { return s + (r.supMinutes || 0); }, 0); var dh = dm / 60; var ratio = tot > 0 ? (dh / tot) * 100 : 0; return { tot: tot, dh: dh, ratio: ratio, ok: ratio >= 2.5 || tot < 40 }; };
+  var domStats = function(aid) { var ar = rats.filter(function(r) { return r.apprenticeId === aid; }); var st = {}; Object.keys(RBT_TASKS).forEach(function(d) { var dr = ar.filter(function(r) { return r.taskDomain === d; }); var avg = dr.length > 0 ? dr.reduce(function(s, r) { return s + r.score; }, 0) / dr.length : 0; st[d] = { count: dr.length, avg: avg }; }); return st; };
+  var userList = Object.values(users);
+  function t(lang, en, es) { return lang === "es" ? es : en; }
+  var pinVerified = false;
+  var setPinVerified = function() {};
+  var pinInput = "";
+  var setPinInput = function() {};
+  var pinErr = "";
+  var setPinErr = function() {};
+  /* ========== NOT LOGGED IN ========== */
+  if (!user) {
+    return (<div>
+      <div className="top-nav"><div className="logo-container"><span className="logo-text">I-LEAD AMS</span><span className="tier-badge">AMS</span></div><div className="nav-right"><LT /></div></div>
+      <div className="auth-container"><div className="auth-card">
+        <div className="auth-title">I-LEAD AMS</div>
+        <div className="auth-subtitle">{lang === "es" ? "Sistema de Gestion de Aprendizaje" : "Apprenticeship Management System"}</div>
+        <div className="auth-tabs"><button className={authMode === "login" ? "auth-tab active" : "auth-tab"} onClick={function() { setAuthMode("login"); }}>{lang === "es" ? "Iniciar Sesion" : "Sign In"}</button><button className={authMode === "signup" ? "auth-tab active" : "auth-tab"} onClick={function() { setAuthMode("signup"); }}>{lang === "es" ? "Crear Cuenta" : "Create Account"}</button></div>
+        {authMode === "login" ? (<form onSubmit={handleLogin}>
+          <div className="form-group"><label>Email</label><input type="email" id="loginEmail" required /></div>
+          <div className="form-group"><label>{lang === "es" ? "Contrasena" : "Password"}</label><input type="password" required /></div>
+          <button className="btn" type="submit">{lang === "es" ? "Iniciar Sesion" : "Sign In"}</button>
+          <div className="login-link"><a onClick={function() { setAuthMode("signup"); }}>{lang === "es" ? "Crear Cuenta" : "Create Account"}</a></div>
+        </form>) : (<form onSubmit={handleRegister}>
+          <div className="form-row"><div className="form-group"><label>{lang === "es" ? "Nombre" : "First Name"}</label><input type="text" required value={fd.firstName || ""} onChange={function(e) { up({ firstName: e.target.value }); }} /></div><div className="form-group"><label>{lang === "es" ? "Apellido" : "Last Name"}</label><input type="text" required value={fd.lastName || ""} onChange={function(e) { up({ lastName: e.target.value }); }} /></div></div>
+          <div className="form-group"><label>Email</label><input type="email" required value={fd.email || ""} onChange={function(e) { up({ email: e.target.value }); }} /></div>
+          <div className="form-group"><label>{lang === "es" ? "Telefono" : "Phone"}</label><input type="tel" value={fd.phone || ""} onChange={function(e) { up({ phone: e.target.value }); }} /></div>
+          <div className="form-group"><label>{lang === "es" ? "Rol" : "Role"}</label><select required value={fd.role || ""} onChange={function(e) { up({ role: e.target.value }); }}><option value="">{lang === "es" ? "Seleccionar..." : "Select..."}</option><option value="apprentice">Apprentice / Aprendiz</option><option value="supervisor">Supervisor / Supervisor</option><option value="journeyworker">Journeyworker / Jornalero</option><option value="administrator">Administrator / Administrador</option></select></div>
+          <div className="form-group"><label>{lang === "es" ? "Programa" : "Program"}</label><select value={fd.programCode || ""} onChange={function(e) { up({ programCode: e.target.value }); }}><option value="">Select...</option>{Object.entries(progs).map(function(ent) { return <option key={ent[0]} value={ent[0]}>{ent[1].name}</option>; })}</select></div>
+          <div className="form-group"><label>{lang === "es" ? "Contrasena" : "Password"}</label><input type="password" required /></div>
+          <button className={loading ? "btn disabled" : "btn"} type="submit" disabled={loading}>{loading ? "..." : (lang === "es" ? "Crear Cuenta" : "Create Account")}</button>
+          <div className="login-link"><a onClick={function() { setAuthMode("login"); }}>{lang === "es" ? "Iniciar Sesion" : "Sign In"}</a></div>
+        </form>)}
+      </div></div>
+      {toast && <div className={"toast toast-" + toast.type}>{toast.message}</div>}
+    </div>);
+  }
+  return null;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

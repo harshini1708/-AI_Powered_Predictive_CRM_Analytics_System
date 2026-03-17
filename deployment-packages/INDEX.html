@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I-LEAD AMS v4 - Deployment Resources</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #003d82 0%, #1a5fa0 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .version-badge {
+            display: inline-block;
+            background: #e84c1f;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #003d82;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e84c1f;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            border-color: #003d82;
+            box-shadow: 0 8px 20px rgba(0,61,130,0.2);
+            transform: translateY(-5px);
+        }
+        .card-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            color: #003d82;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .card-link {
+            display: inline-block;
+            background: #003d82;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+        .card-link:hover {
+            background: #002654;
+        }
+        .download-btn {
+            background: #e84c1f;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .download-btn:hover {
+            background: #c93e1a;
+        }
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature {
+            background: white;
+            padding: 15px;
+            border-left: 4px solid #e84c1f;
+            border-radius: 4px;
+        }
+        .feature h4 {
+            color: #003d82;
+            margin-bottom: 5px;
+        }
+        .feature p {
+            color: #666;
+            font-size: 0.95em;
+        }
+        .quick-links {
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .quick-links h3 {
+            color: #003d82;
+            margin-bottom: 15px;
+        }
+        .quick-links a {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            color: #003d82;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .header h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 I-LEAD AMS</h1>
+            <p>Apprenticeship Management System - Complete Deployment Package</p>
+            <div class="version-badge">Version 4.0 - Phase 7C Complete</div>
+        </div>
+
+        <div class="content">
+            <!-- System Status -->
+            <div class="section">
+                <h2>📊 System Status</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number">✅</div>
+                        <div class="stat-label">Frontend Built</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">✅</div>
+                        <div class="stat-label">Backend Ready</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">✅</div>
+                        <div class="stat-label">Analytics Working</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">✅</div>
+                        <div class="stat-label">Production Ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Overview -->
+            <div class="section">
+                <h2>✨ What's Included in V4</h2>
+                <div class="features-list">
+                    <div class="feature">
+                        <h4>📈 Analytics Dashboard</h4>
+                        <p>Real-time charts and competency heatmaps</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🔍 Advanced Filtering</h4>
+                        <p>Complex filters with date range and domain selection</p>
+                    </div>
+                    <div class="feature">
+                        <h4>📥 Data Export</h4>
+                        <p>CSV and PDF export capabilities</p>
+                    </div>
+                    <div class="feature">
+                        <h4>👥 User Management</h4>
+                        <p>Complete authentication and RBAC</p>
+                    </div>
+                    <div class="feature">
+                        <h4>⏱️ Hour Tracking</h4>
+                        <p>Full apprentice hour management</p>
+                    </div>
+                    <div class="feature">
+                        <h4>✅ Approvals</h4>
+                        <p>Workflow for supervisor approvals</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Resources -->
+            <div class="section">
+                <h2>📚 Deployment Documentation</h2>
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon">📖</div>
+                        <h3>Full Deployment Guide</h3>
+                        <p>50+ pages of detailed instructions for AWS Lightsail deployment including system setup, database configuration, SSL/TLS, and troubleshooting.</p>
+                        <a href="#deployment-guide" class="card-link">View Guide</a>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">⚡</div>
+                        <h3>Quick Start (5 min)</h3>
+                        <p>Express setup guide for developers who want to get up and running quickly on Lightsail.</p>
+                        <a href="#quick-start" class="card-link">View Quick Start</a>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🗺️</div>
+                        <h3>Phase 7D Roadmap</h3>
+                        <p>Next-phase features including email notifications, bulk operations, RBAC, and performance optimization.</p>
+                        <a href="#roadmap" class="card-link">View Roadmap</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="section">
+                <div class="quick-links">
+                    <h3>⚡ Quick Navigation</h3>
+                    <a href="https://github.com/your-org/ilead-ams">📦 GitHub Repository</a>
+                    <a href="http://localhost:3001">🌐 Local Frontend (Dev)</a>
+                    <a href="http://localhost:3000/api/health">🔌 Backend API</a>
+                    <a href="#system-requirements">📋 System Requirements</a>
+                    <a href="#checklist">✅ Pre-Deployment Checklist</a>
+                </div>
+            </div>
+
+            <!-- System Requirements -->
+            <div class="section" id="system-requirements">
+                <h2>💻 System Requirements</h2>
+                <div class="features-list">
+                    <div class="feature">
+                        <h4>AWS Lightsail Instance</h4>
+                        <p>1GB RAM, 1vCPU minimum (2GB/2vCPU recommended)</p>
+                    </div>
+                    <div class="feature">
+                        <h4>Operating System</h4>
+                        <p>Ubuntu 20.04 LTS or newer</p>
+                    </div>
+                    <div class="feature">
+                        <h4>Node.js</h4>
+                        <p>v18 LTS or newer</p>
+                    </div>
+                    <div class="feature">
+                        <h4>MongoDB</h4>
+                        <p>v6.0 or newer</p>
+                    </div>
+                    <div class="feature">
+                        <h4>Disk Space</h4>
+                        <p>Minimum 20GB (30GB recommended)</p>
+                    </div>
+                    <div class="feature">
+                        <h4>Bandwidth</h4>
+                        <p>At least 1 Mbps connection</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Options -->
+            <div class="section">
+                <h2>⬇️ Download Packages</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Choose your deployment method:
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #003d82; margin-bottom: 10px;">📦 Complete Package</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Full application with all source code and documentation</p>
+                        <button class="download-btn" onclick="downloadPackage('complete')">Download (ZIP)</button>
+                        <p style="color: #999; font-size: 0.9em; margin-top: 10px;">~450MB</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #003d82; margin-bottom: 10px;">🚀 Production Build</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Pre-built frontend + backend with documentation</p>
+                        <button class="download-btn" onclick="downloadPackage('production')">Download (ZIP)</button>
+                        <p style="color: #999; font-size: 0.9em; margin-top: 10px;">~180MB</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #003d82; margin-bottom: 10px;">📖 Documentation Only</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Deployment guides without source code</p>
+                        <button class="download-btn" onclick="downloadPackage('docs')">Download (ZIP)</button>
+                        <p style="color: #999; font-size: 0.9em; margin-top: 10px;">~5MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pre-Deployment Checklist -->
+            <div class="section" id="checklist">
+                <h2>✅ Pre-Deployment Checklist</h2>
+                <p style="margin-bottom: 20px; color: #666;">Before deploying to Lightsail, ensure:</p>
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 8px;">
+                    <div style="columns: 2; gap: 30px;">
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> AWS Lightsail account created</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> SSH key pair downloaded</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> Security groups configured (22, 80, 443)</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> Domain name purchased (optional)</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> SSL certificate ready</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> Email SMTP credentials ready</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> Database backup plan</label>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label><input type="checkbox"> Git repository access</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Details -->
+            <div class="section" id="deployment-guide">
+                <h2>📖 Deployment Guide Highlights</h2>
+                <p>The complete deployment guide includes:</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #003d82; margin-bottom: 15px;">Architecture & Setup:</h4>
+                    <ul style="color: #666; margin-left: 20px; line-height: 2;">
+                        <li>AWS Lightsail instance creation and configuration</li>
+                        <li>Security group setup (SSH, HTTP, HTTPS)</li>
+                        <li>Node.js and MongoDB installation</li>
+                        <li>PM2 process manager setup</li>
+                        <li>Nginx reverse proxy configuration</li>
+                    </ul>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #003d82; margin-bottom: 15px;">Database & Security:</h4>
+                    <ul style="color: #666; margin-left: 20px; line-height: 2;">
+                        <li>MongoDB database setup with authentication</li>
+                        <li>SSL/TLS with Let's Encrypt</li>
+                        <li>Environment variable configuration</li>
+                        <li>Security headers and CORS setup</li>
+                        <li>Rate limiting and request validation</li>
+                    </ul>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #003d82; margin-bottom: 15px;">Operations & Maintenance:</h4>
+                    <ul style="color: #666; margin-left: 20px; line-height: 2;">
+                        <li>Health checks and monitoring setup</li>
+                        <li>Log management and rotation</li>
+                        <li>Database backup and recovery procedures</li>
+                        <li>Performance optimization and tuning</li>
+                        <li>Troubleshooting common issues</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Start -->
+            <div class="section" id="quick-start">
+                <h2>⚡ Quick Start (5 Minutes)</h2>
+                <p style="color: #666; margin-bottom: 15px;">For experienced DevOps teams:</p>
+                <div class="code-block">ssh -i key.pem ubuntu@your-instance-ip
+
+# Install dependencies
+curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs mongodb-org nginx
+sudo npm install -g pm2
+
+# Deploy
+git clone https://github.com/your-org/ilead-ams.git /opt/apps/ilead-ams
+cd /opt/apps/ilead-ams/backend && npm install && npm run build
+pm2 start npm --name "ilead-backend" -- start
+
+# Configure Nginx and restart
+sudo systemctl restart nginx
+
+# Access at http://your-instance-ip
+                </div>
+                <p style="color: #999; font-size: 0.9em; margin-top: 10px;">
+                    👉 See LIGHTSAIL_QUICK_START.md for complete quick start instructions
+                </p>
+            </div>
+
+            <!-- Phase 7D -->
+            <div class="section" id="roadmap">
+                <h2>🗺️ Phase 7D Roadmap</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    After V4 deployment, Phase 7D includes these enhancements:
+                </p>
+                <div class="features-list">
+                    <div class="feature">
+                        <h4>📧 Email Notifications</h4>
+                        <p>Hour submission alerts and approval confirmations</p>
+                    </div>
+                    <div class="feature">
+                        <h4>📦 Bulk Operations</h4>
+                        <p>Approve multiple logs and import CSV data</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🔐 Advanced RBAC</h4>
+                        <p>Custom roles and fine-grained permissions</p>
+                    </div>
+                    <div class="feature">
+                        <h4>⚙️ System Settings</h4>
+                        <p>Admin configuration dashboard</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🚀 Performance</h4>
+                        <p>Optimization and caching strategies</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🌙 Dark Mode</h4>
+                        <p>Theme customization and accessibility</p>
+                    </div>
+                </div>
+                <p style="color: #999; font-size: 0.9em; margin-top: 20px;">
+                    📖 See PHASE_7D_ROADMAP.md for detailed feature planning and timeline
+                </p>
+            </div>
+
+            <!-- Support -->
+            <div class="section">
+                <h2>🆘 Support & Resources</h2>
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 8px;">
+                    <h4 style="color: #003d82; margin-bottom: 15px;">Documentation Files:</h4>
+                    <ul style="color: #666; margin-left: 20px; line-height: 2;">
+                        <li><strong>DEPLOYMENT_GUIDE.md</strong> - Complete 50-page deployment guide</li>
+                        <li><strong>LIGHTSAIL_QUICK_START.md</strong> - 5-minute express setup guide</li>
+                        <li><strong>PHASE_7D_ROADMAP.md</strong> - Next phase features and planning</li>
+                        <li><strong>This INDEX.html</strong> - Resource navigation page</li>
+                    </ul>
+                </div>
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <h4 style="color: #003d82; margin-bottom: 15px;">Key Repositories:</h4>
+                    <ul style="color: #666; margin-left: 20px; line-height: 2;">
+                        <li>📦 Application: <code>/ilead-ams/</code></li>
+                        <li>🔙 Backend: <code>/ilead-ams/backend/</code></li>
+                        <li>🎨 Frontend: <code>/ilead-ams/frontend/</code></li>
+                        <li>📚 Docs: <code>/deployment-packages/</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Getting Started -->
+            <div class="section">
+                <h2>🎯 Getting Started</h2>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin-bottom: 20px; font-size: 1.5em;">Ready to Deploy?</h3>
+                    <p style="margin-bottom: 20px; font-size: 1.1em;">Choose your path:</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <button class="download-btn" onclick="alert('Download production build package'); downloadPackage('production')" style="background: #fff; color: #667eea; font-weight: bold;">
+                            🚀 Deploy to Lightsail
+                        </button>
+                        <button class="download-btn" onclick="alert('Download complete package'); downloadPackage('complete')" style="background: #fff; color: #667eea; font-weight: bold;">
+                            💻 Complete Package
+                        </button>
+                        <button class="download-btn" onclick="alert('Read full deployment guide'); window.location='#deployment-guide'" style="background: #fff; color: #667eea; font-weight: bold;">
+                            📖 Read Guide
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>I-LEAD AMS v4.0</strong> | Phase 7C Complete | Production Ready</p>
+            <p style="margin-top: 10px; font-size: 0.95em;">
+                © 2026 All Rights Reserved | 
+                <a href="#" style="color: #666; text-decoration: none;">Privacy Policy</a> |
+                <a href="#" style="color: #666; text-decoration: none;">Terms of Service</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        function downloadPackage(type) {
+            // This would link to actual downloadable files
+            const files = {
+                complete: '/downloads/ilead-ams-v4-complete.zip',
+                production: '/downloads/ilead-ams-v4-production.zip',
+                docs: '/downloads/ilead-ams-v4-docs.zip'
+            };
+            
+            // In a real deployment, this would trigger an actual download
+            console.log(`Download initiated for: ${type}`);
+            console.log(`File: ${files[type]}`);
+            
+            // For now, show instructions
+            alert(`To download the ${type} package:\n\n1. Visit your deployment server\n2. Access /downloads/ directory\n3. Download the appropriate ZIP file\n\nOr use:\ngit clone <repository-url>`);
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

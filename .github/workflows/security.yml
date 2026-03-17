@@ -1,0 +1,101 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [ main, develop, claude/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    name: Dependency Security Check
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Run npm audit
+      working-directory: ./ilead-ams/backend
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+
+    - name: Check for known vulnerabilities
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+      continue-on-error: true
+
+  sast:
+    runs-on: ubuntu-latest
+    name: Static Application Security Testing
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'ilead-ams/backend/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: ./ilead-ams/backend
+      run: npm ci
+
+    - name: Run ESLint security check
+      working-directory: ./ilead-ams/backend
+      run: npm run lint
+      continue-on-error: true
+
+  container-scan:
+    runs-on: ubuntu-latest
+    name: Container Security Scan
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./ilead-ams/backend
+        push: false
+        tags: ${{ github.sha }}
+        load: true
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ github.sha }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      if: env.SONAR_TOKEN != ''
+      continue-on-error: true

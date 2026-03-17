@@ -1,0 +1,91 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop, claude/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ilead_ams_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'ilead-ams/backend/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: ./ilead-ams/backend
+      run: npm ci
+
+    - name: Run linter
+      working-directory: ./ilead-ams/backend
+      run: npm run lint
+      continue-on-error: true
+
+    - name: Run tests
+      working-directory: ./ilead-ams/backend
+      env:
+        NODE_ENV: test
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_NAME: ilead_ams_test
+      run: npm test -- --coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./ilead-ams/backend/coverage/coverage-final.json
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Comment PR with test results
+      if: always() && github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const coverage = 'ilead-ams/backend/coverage/coverage-summary.json';
+          if (fs.existsSync(coverage)) {
+            const data = JSON.parse(fs.readFileSync(coverage, 'utf8'));
+            const total = data.total;
+            const comment = `## Test Results ✅
+
+          | Metric | Coverage |
+          |--------|----------|
+          | Lines | ${total.lines.pct}% |
+          | Statements | ${total.statements.pct}% |
+          | Functions | ${total.functions.pct}% |
+          | Branches | ${total.branches.pct}% |`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }

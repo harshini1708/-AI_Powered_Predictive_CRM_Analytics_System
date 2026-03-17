@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env.local
+.DS_Store
+coverage
+test
+__tests__
+.eslintrc
+.prettierrc
+public

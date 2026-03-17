@@ -1,0 +1,137 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ilead-ams-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Determine deployment environment
+      id: env
+      run: |
+        if [[ "${{ github.event_name }}" == "release" ]]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+          echo "version=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+        else
+          echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Configure deployment credentials
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+
+    - name: Pull latest code
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST \
+          "cd $DEPLOY_PATH && git fetch origin && git checkout ${{ steps.env.outputs.version }}"
+
+    - name: Pull Docker image
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST \
+          "cd $DEPLOY_PATH && docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.env.outputs.version }}"
+
+    - name: Run migrations
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        COMPOSE_FILE: docker-compose.prod.yml
+      run: |
+        ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST \
+          "cd $DEPLOY_PATH && docker-compose -f $COMPOSE_FILE exec -T api npm run migrate"
+
+    - name: Deploy services
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        COMPOSE_FILE: docker-compose.prod.yml
+      run: |
+        ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST \
+          "cd $DEPLOY_PATH && docker-compose -f $COMPOSE_FILE up -d"
+
+    - name: Health check
+      env:
+        DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      run: |
+        ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST \
+          "curl -f http://localhost:3000/health || exit 1"
+
+    - name: Notify deployment success
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.createDeployment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: '${{ github.sha }}',
+            environment: '${{ steps.env.outputs.environment }}',
+            description: 'Deployment successful',
+            auto_merge: false,
+            required_contexts: [],
+            mediaType: {
+              previews: ['ant-man']
+            }
+          });
+
+    - name: Notify deployment failure
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ Deployment to ${{ steps.env.outputs.environment }} failed. Check logs for details.'
+          });
+
+    - name: Clean up
+      if: always()
+      run: |
+        rm -f ~/.ssh/deploy_key
